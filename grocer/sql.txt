@@ -1,0 +1,75 @@
+================================================ TABLES ===============================================
+CREATE TABLE PRODUCT (
+    ID INT PRIMARY KEY,
+    NAME VARCHAR(255) NOT NULL,
+    CATEGORY VARCHAR(100) NOT NULL,
+    PRICE NUMBER(10) NOT NULL,
+    QUANTITY INT NOT NULL,
+    CREATED_AT DATE
+);
+
+CREATE TABLE PRODUCT_LOG (
+    ID NUMBER(10) PRIMARY KEY, 
+    ADMIN VARCHAR2(50), 
+    OPERATION VARCHAR2(50), 
+    ACTIONDATE DATE
+);
+
+
+================================================ SEQUENCES ===============================================
+CREATE SEQUENCE PRODUCT_SEQ
+  START WITH 1
+  INCREMENT BY 1
+  NOCACHE;
+
+  CREATE SEQUENCE LOG_SEQ
+  START WITH 1
+  INCREMENT BY 1
+  NOCACHE;
+
+INSERT INTO Product (id, name, category, price, quantity, created_at ) VALUES (PRODUCT_SEQ.nextval, 'Apple', 'Fruits', 99, 100, sysdate);
+INSERT INTO Product (id, name, category, price, quantity, created_at) VALUES (PRODUCT_SEQ.nextval, 'Banana', 'Fruits', 49, 200,sysdate);
+INSERT INTO Product (id, name, category, price, quantity, created_at) VALUES (PRODUCT_SEQ.nextval, 'Milk', 'Dairy', 99, 50,sysdate);
+INSERT INTO Product (id, name, category, price, quantity, created_at) VALUES (PRODUCT_SEQ.nextval, 'Bread', 'Bakery', 99, 80,sysdate);
+INSERT INTO Product (id, name, category, price, quantity, created_at) VALUES (PRODUCT_SEQ.nextval, 'Eggs', 'Dairy', 49, 120,sysdate);
+
+
+========================================== PROCEDURES    ======================================================
+CREATE OR REPLACE PROCEDURE ADD_PRODUCT(
+NAME in PRODUCT.NAME%type, CATEGORY in  PRODUCT.CATEGORY%type, PRICE in  PRODUCT.PRICE%type, QUANTITY in  PRODUCT.QUANTITY%type
+)
+AS
+BEGIN
+    INSERT INTO PRODUCT(ID, NAME , CATEGORY, PRICE, QUANTITY, CREATED_AT)
+    VALUES (PRODUCT_SEQ.NEXTVAL, NAME , CATEGORY, PRICE, QUANTITY, SYSDATE);
+    
+    COMMIT;
+    
+    DBMS_OUTPUT.PUT_LINE('Added successfully');
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Failed');
+END;
+
+
+========================== TRIGGER =====================================
+CREATE OR REPLACE TRIGGER PRODUCT_LOGS
+AFTER INSERT OR UPDATE OR DELETE ON PRODUCT
+
+DECLARE
+OPNAME VARCHAR2(50);
+
+BEGIN
+IF INSERTING THEN
+OPNAME := 'INSERT';
+
+ELSIF UPDATING THEN
+OPNAME := 'UPDATE';
+
+ELSIF DELETING THEN
+OPNAME := 'DELETE';
+
+END IF;
+INSERT INTO PRODUCT_LOG VALUES(LOG_SEQ.NEXTVAL, USER, OPNAME, SYSDATE);
+END;
