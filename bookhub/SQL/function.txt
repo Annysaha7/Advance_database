@@ -1,0 +1,142 @@
+========================= function checking book exixt of not ============================
+create or replace function bookExist(bookno book.bookid%type) 
+return number 
+is
+value book.bookid%type; 
+
+begin 
+select bookid into value from book where bookid = bookno; 
+if value is null then return 0; 
+else return 1; 
+end if; 
+end;
+
+declare
+
+boo_K book.bookid%type;
+book_id book.bookid%type := :BOOK_ID;
+begin
+boo_K := bookExist (book_id);
+dbms_output.put_line('Book Exist');
+end;
+
+========================= function checking writer exixt of not ============================
+create or replace function writerExist(writerno writer.writerid%type) 
+return number 
+is
+value writer.writerid%type; 
+
+begin 
+select writerid into value from writer where writerid = writerno; 
+if value is null then return 0; 
+else return 1; 
+end if; 
+end;
+
+declare
+write_r writer.writerid%type;
+writer_id writer.writerid%type := :WRITER_ID;
+begin
+write_r := writerExist(writer_id);
+dbms_output.put_line('WRITER Exist');
+end;
+
+
+
+========================= function checking member exixt of not ============================
+create or replace function memberExist(memberno member.userid%type) 
+return number 
+is
+value member.userid%type; 
+
+begin 
+select userid into value from member where userid = memberno; 
+if value is null then return 0; 
+else return 1; 
+end if; 
+end;
+
+declare
+write_r member.userid%type;
+member_id member.userid%type := :member_ID;
+begin
+write_r := memberExist(member_id);
+dbms_output.put_line('Member Exist');
+end;
+
+========================= PROCEDURE FOR ALL ADMINS ============================
+CREATE OR REPLACE PROCEDURE ADMINS(ADMINID IN ADMIN.ID%TYPE, ADMINEMAIL OUT ADMIN.EMAIL%TYPE)
+IS
+BEGIN
+select EMAIL INTO ADMINEMAIL FROM ADMIN WHERE ID = ADMINID;
+END;
+
+DECLARE
+CURSOR C1
+IS 
+SELECT ID FROM ADMIN;
+ADMINEMAIL ADMIN.EMAIL%TYPE;
+
+BEGIN
+FOR I IN C1 LOOP
+ADMINS(I.ID, ADMINEMAIL);
+DBMS_OUTPUT.PUT_LINE('ADMIN ID: ' || I.ID || ' EMAIL: ' || ADMINEMAIL);
+END LOOP;
+END;
+
+========================= PROCEDURE FOR ADDING BOOK ============================
+CREATE OR REPLACE PROCEDURE add_Book(
+TITLE in book.TITLE%type, AUTHOR in  book.AUTHOR%type, PUBLICATION in  book.PUBLICATION%type, LANGUAGE in  book.LANGUAGE%type, AVAILABLECOPIES in  book.AVAILABLECOPIES%type, TOTALCOPIES in book.TOTALCOPIES%type
+)
+AS
+BEGIN
+    INSERT INTO BOOK(BOOKID, TITLE, AUTHOR, PUBLICATION, LANGUAGE, AVAILABLECOPIES, TOTALCOPIES)
+    VALUES (BOOK_SEQ.NEXTVAL, TITLE, AUTHOR, TO_DATE(PUBLICATION, 'YYYY-MM-DD'), LANGUAGE, AVAILABLECOPIES, TOTALCOPIES);
+    
+    COMMIT;
+    
+    DBMS_OUTPUT.PUT_LINE('Added successfully');
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Failed');
+END;
+
+
+========================= PROCEDURE FOR ADDING NEW WRITER INTO DATABASE ============================
+CREATE OR REPLACE PROCEDURE regester_writer(
+NAME in writer.NAME%type, NATIONALITY in  writer.NATIONALITY %type, DATEOFBIRTH in  writer.DATEOFBIRTH %type, BIOGRAPHY in  writer.BIOGRAPHY %type
+)
+AS
+BEGIN
+    INSERT INTO writer(WRITERID, NAME , NATIONALITY, DATEOFBIRTH , BIOGRAPHY  )
+    VALUES (WRITER_SEQ.NEXTVAL, NAME , NATIONALITY, TO_DATE(DATEOFBIRTH , 'YYYY-MM-DD') , BIOGRAPHY  );
+    
+    COMMIT;
+    
+    DBMS_OUTPUT.PUT_LINE('Added successfully');
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Failed');
+END;
+
+====================== PROCEDURE FOR UPDATE BOOK ===============================================
+CREATE OR REPLACE PROCEDURE update_book(
+    TITLE in book.TITLE%type, AUTHOR in  book.AUTHOR%type, PUBLICATION in  book.PUBLICATION%type, LANGUAGE in  book.LANGUAGE%type, AVAILABLECOPIES in  book.AVAILABLECOPIES%type, TOTALCOPIES in book.TOTALCOPIES%type, ID in book.BOOKID%TYPE
+)
+AS
+BEGIN
+    UPDATE BOOK
+    SET TITLE = TITLE , AUTHOR  = AUTHOR , PUBLICATION = SYSDATE, LANGUAGE = LANGUAGE ,AVAILABLECOPIES = AVAILABLECOPIES , TOTALCOPIES =TOTALCOPIES 
+    WHERE BOOKID = ID ;
+    
+    COMMIT;
+    
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('Failed to update course');
+END;
+
